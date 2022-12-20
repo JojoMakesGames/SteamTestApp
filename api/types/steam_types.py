@@ -2,6 +2,10 @@ import strawberry
 
 @strawberry.type
 class Game:
-    play_time: int
+    _play_time: int
     name: str
+
+    @strawberry.field
+    def play_time(self, info) -> str:
+        return f"{self._play_time} minutes"
     

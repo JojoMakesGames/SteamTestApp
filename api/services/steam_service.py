@@ -18,6 +18,6 @@ def get_owned_games(steam_id: int) -> List[Game]:
         response = requests.get(url, params=params)
         response.raise_for_status()
         response = response.json()
-        return sorted([Game(play_time=game["playtime_forever"], 
+        return sorted([Game(_play_time=game["playtime_forever"], 
             name=game["name"]) for game in response["response"]["games"]],
             key=lambda game: game.name)
