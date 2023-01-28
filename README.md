@@ -7,5 +7,5 @@ docker run \
     --volume=$HOME/neo4j/data:/data \
     --env=NEO4J_AUTH=none neo4j
 
-set 
+set your steam key and user_id in local.config.ini 
 run python ./api/database/create_graph.py
