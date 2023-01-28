@@ -38,4 +38,18 @@ def get_game_details(app_id: int) -> List[Game]:
         response.raise_for_status()
         response = response.json()
         return response
-        return [Game(name=game["data"]["name"]) for game in response.values()]
+
+def get_steam_username(steam_id: int) -> str:
+        """
+        Get a list of games owned by a user
+        """
+        url = f"{settings.steam_private_api}/ISteamUser/GetPlayerSummaries/v2/"
+        params = {
+            "key": settings.steam_key,
+            "steamids": steam_id,
+            "format": "json",
+        }
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        response = response.json()
+        return response['response']['players'][0]['personaname']
