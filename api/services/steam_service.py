@@ -18,6 +18,24 @@ def get_owned_games(steam_id: int) -> List[Game]:
         response = requests.get(url, params=params)
         response.raise_for_status()
         response = response.json()
+        return response['response']['games']
         return sorted([Game(_play_time=game["playtime_forever"], 
             name=game["name"]) for game in response["response"]["games"]],
             key=lambda game: game.name)
+
+
+
+def get_game_details(app_id: int) -> List[Game]:
+        """
+        Get a list of games owned by a user
+        """
+        url = f"{settings.steam_public_api}/appdetails/"
+        params = { 
+            "appids": app_id,
+            "format": "json",
+        }
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        response = response.json()
+        return response
+        return [Game(name=game["data"]["name"]) for game in response.values()]

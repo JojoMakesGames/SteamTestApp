@@ -337,6 +337,24 @@ files = [
 ]
 
 [[package]]
+name = "neo4j"
+version = "5.4.0"
+description = "Neo4j Bolt driver for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "neo4j-5.4.0.tar.gz", hash = "sha256:50293f716412cc8a0fc87c364b0da105aa439859d28ffa5c89f5ca0d44514049"},
+]
+
+[package.dependencies]
+pytz = "*"
+
+[package.extras]
+numpy = ["numpy (>=1.7.0,<2.0.0)"]
+pandas = ["numpy (>=1.7.0,<2.0.0)", "pandas (>=1.1.0,<2.0.0)"]
+
+[[package]]
 name = "pydantic"
 version = "1.10.2"
 description = "Data validation and settings management using python type hints"
@@ -447,6 +465,18 @@ files = [
 
 [package.dependencies]
 six = ">=1.4.0"
+
+[[package]]
+name = "pytz"
+version = "2022.7.1"
+description = "World timezone definitions, modern and historical"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pytz-2022.7.1-py2.py3-none-any.whl", hash = "sha256:78f4f37d8198e0627c5f1143240bb0206b8691d8d7ac6d78fee88b78733f8c4a"},
+    {file = "pytz-2022.7.1.tar.gz", hash = "sha256:01a0681c4b9684a28304615eba55d1ab31ae00bf68ec157ec3708a8182dbbcd0"},
+]
 
 [[package]]
 name = "pyyaml"
@@ -924,4 +954,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "86817eb0ded42eb5934f8513ec730ca997c4912bbe9d61b9fa07b452d49555ec"
+content-hash = "3aa1fcc798363e065131a3fe42dfd4a416930a20938e5a3da2bf9b90e866e1d9"
