@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     steam_key: str = config.get('API', 'STEAM_API_TOKEN')
     steam_public_api: str = "http://store.steampowered.com/api"
     steam_private_api: str = "https://api.steampowered.com"
-    my_user: int = 76561198139366501
+    neo4j_uri: str = config.get('DB', 'NEO4J_URI')
+    my_user: int = 76561197986552509
 
 
 settings = Settings()

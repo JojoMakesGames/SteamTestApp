@@ -1,5 +1,7 @@
 import requests
 from typing import List
+from api.database.games_dao import get_all_owned_games
+from api.database.session import get_graph_session
 from api.settings import settings
 
 from api.types.steam_types import Game
@@ -8,7 +10,7 @@ def get_owned_games(steam_id: int) -> List[Game]:
         """
         Get a list of games owned by a user
         """
-        url = f"{settings.steam_private_api}/IPlayerService/GetOwnedGames/v1/"
+        url = f"{settings.steam_private_api}/IPlayerService/GetOwnedGames/"
         params = {
             "key": settings.steam_key,
             "steamid": steam_id,
@@ -19,11 +21,6 @@ def get_owned_games(steam_id: int) -> List[Game]:
         response.raise_for_status()
         response = response.json()
         return response['response']['games']
-        return sorted([Game(_play_time=game["playtime_forever"], 
-            name=game["name"]) for game in response["response"]["games"]],
-            key=lambda game: game.name)
-
-
 
 def get_game_details(app_id: int) -> List[Game]:
         """

@@ -1,0 +1,9 @@
+from neo4j:3.5.14
+
+ENV NEO4J_AUTH=none
+
+EXPOSE 7474
+EXPOSE 7687
+EXPOSE 1337
+
+VOLUME $HOME/neo4j/data:/data 

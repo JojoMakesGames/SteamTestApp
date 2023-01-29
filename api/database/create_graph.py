@@ -11,7 +11,7 @@ userName        = "neo4j"
 password        = "password"
 #region methods
 def clean_string(string: str):
-    return re.sub('[^a-zA-Z1-9]+', '', string)
+    return re.sub('[^a-zA-Z0-9, ]+', '', string)
 
 def add_spaces(string: str):
     return re.sub('([a-z])([A-Z])', r'\1 \2', string)
@@ -50,7 +50,7 @@ def fetch_games():
     game_details = []
     games = get_owned_games(settings.my_user)
     for i, game in enumerate(games):
-        print(i, game['appid'])
+        print(f"Fetching game {i+1}/{len(games)}")
         details = get_game_details(game['appid'])
         game_details.append((game['appid'],details))
         time.sleep(1.5)
@@ -126,30 +126,147 @@ def build_create_query(game_details: List[Dict[str, Any]], genres: Set, publishe
                 """
     create_query = create_query.strip()[:-1]
     return create_query
+
+def build_csv(game_details: List[Dict[str, Any]], username: str):
+    games = []
+    company_added = set()
+    companies = []
+    publisher_added = set()
+    publishers = []
+    developer_added = set()
+    developers = []
+    game_to_developer = []
+    game_to_publisher = []
+    genre_added = set()
+    genres = []
+    game_to_genre = []
+    game_to_user = []
+    for game_detail in game_details:
+        name = clean_string(game_detail['name'])
+        if game_detail['publisher']:
+            pubs = [clean_string(publisher) for publisher in game_detail['publisher']]
+        if game_detail['developer']:
+            devs = [clean_string(developer) for developer in game_detail['developer']]
+        if game_detail['genre']:
+            gens = [clean_string(genre['description']) for genre in game_detail['genre']]
+        game = {
+            'name': name
+        }
+        games.append(game)
+        game_to_user.append({
+            'from': username,
+            'to': name
+        })
+        for publisher in pubs:
+            if publisher not in company_added:
+                company = {
+                    'name': publisher
+                }
+                companies.append(company)
+                company_added.add(publisher)
+                publishers.append(publisher)
+                publisher_added.add(publisher)
+            game_to_publisher.append({
+                'from': name,
+                'to': publisher
+            })
+        for developer in devs:
+            if developer not in company_added:
+                company = {
+                    'name': developer
+                }
+                companies.append(company)
+                company_added.add(developer)
+                developers.append(developer)
+                developer_added.add(developer)
+            game_to_developer.append({
+                    'from': name,
+                    'to': developer
+                })
+        for genre in gens:
+
+            if genre and genre not in genre_added:
+                gen = {
+                    'name': genre
+                }
+                genres.append(gen)
+                genre_added.add(genre)
+            game_to_genre.append({
+                'from': name,
+                'to': genre
+            })
+    queries= []
+    queries.append("""
+    UNWIND $entries as row
+    MERGE (g:Game {name: row.name})
+    """)
+    queries.append("""
+    UNWIND $entries as row
+    MERGE (c:Company {name: row.name})
+    """)
+    queries.append("""
+    UNWIND $entries as row
+    MERGE (g:Genre {name: row.name})
+    """)
+    queries.append("""
+    MERGE (u:User {name: $username})
+    """)
+    queries.append("""
+    UNWIND $entries as row
+    MATCH (u:User {name: row.from})
+    MATCH (g:Game {name: row.to})
+    MERGE (u)-[:OWNS]->(g)
+    """)
+    queries.append("""
+    UNWIND $entries as row
+    MATCH (g:Game {name: row.from})
+    MATCH (c:Company {name: row.to})
+    MERGE (g)<-[:PUBLISHED]-(c)
+    """)
+    queries.append("""
+    UNWIND $entries as row
+    MATCH (g:Game {name: row.from})
+    MATCH (c:Company {name: row.to})
+    MERGE (g)<-[:DEVELOPED]-(c)
+    """)
+    queries.append("""
+    UNWIND $entries as row
+    MATCH (g:Game {name: row.from})
+    MATCH (c:Genre {name: row.to})
+    MERGE (g)-[:GAME_TYPE]->(c)
+    """)
+
+    driver = GraphDatabase.driver(uri)
+    with driver.session() as session:
+        session.run(queries[0], parameters={"entries": games})
+        session.run(queries[1], parameters={"entries": companies})
+        session.run(queries[2], parameters={"entries": genres})
+        session.run(queries[3], parameters={"username": username})
+        session.run(queries[4], parameters={"entries": game_to_user})
+        session.run(queries[5], parameters={"entries": game_to_publisher})
+        session.run(queries[6], parameters={"entries": game_to_developer})
+        session.run(queries[7], parameters={"entries": game_to_genre})
+    driver.close()
 #endregion
 
 publishers = set()
 developers = set()
 genres = set()
-details = read_file("games.txt")
+username = get_steam_username(settings.my_user)
+txt_file = f"{username}_games.txt"
+try:
+    details = read_file(txt_file)
+except FileNotFoundError:
+    details = None
 if not details:
     games = fetch_games()
     details = fetch_game_details(games)
-    write_file("games.txt", details)
+    write_file(txt_file, details)
+# create_query = build_create_query(details, genres, publishers, developers, settings.my_user)
 
-for dete in details:
-    if dete['publisher']:
-        for pub in dete['publisher']:
-            publishers.add(clean_string(pub))
-    if dete['developer']:
-        for dev in dete['developer']:
-            developers.add(clean_string(dev))
-    if dete['genre']:
-        for gen in dete['genre']:
-            genres.add(clean_string(gen['description']))
-create_query = build_create_query(details, genres, publishers, developers, settings.my_user)
+build_csv(details, username=username)
 
-driver = GraphDatabase.driver(uri, auth=(userName, password))
-with driver.session(database="neo4j") as session:
-    session.run(create_query)
+# driver = GraphDatabase.driver(uri, auth=(userName, password))
+# with driver.session(database="neo4j") as session:
+#     session.run(create_query)
 

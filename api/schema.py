@@ -1,4 +1,6 @@
+from api.services.games_service import get_user_games
 import strawberry
+from strawberry.scalars import Base64
 from fastapi import Depends
 from strawberry.fastapi import GraphQLRouter
 from strawberry.types import Info
@@ -12,10 +14,8 @@ from api.services.steam_service import get_owned_games
 @strawberry.type
 class Query:
     @strawberry.field
-    async def Games(self, info: Info) -> List[Game]:
-        return get_owned_games(steam_id=76561198045509954)
-
-
+    def Games(self, info: Info, steam_id: strawberry.ID) -> List[Game]:
+        return get_user_games(steam_id)
 
 async def get_context(
     session=Depends(get_session),

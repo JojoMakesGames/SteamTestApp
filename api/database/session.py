@@ -1,9 +1,11 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 
 from configparser import ConfigParser
+from api.settings import settings
+from neo4j import GraphDatabase
 
 
 @asynccontextmanager
@@ -20,3 +22,8 @@ async def get_session() -> AsyncSession:
         except Exception as e:
             await session.rollback()
             raise e
+
+def get_graph_session():
+    uri = settings.neo4j_uri
+    driver = GraphDatabase.driver(uri)
+    return driver.session()
