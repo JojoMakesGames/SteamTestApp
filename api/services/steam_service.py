@@ -10,7 +10,7 @@ def get_owned_games(steam_id: int) -> List[Game]:
         """
         Get a list of games owned by a user
         """
-        url = f"{settings.steam_private_api}/IPlayerService/GetOwnedGames/"
+        url = f"{settings.steam_private_api}/IPlayerService/GetOwnedGames/v1"
         params = {
             "key": settings.steam_key,
             "steamid": steam_id,
@@ -50,3 +50,19 @@ def get_steam_username(steam_id: int) -> str:
         response.raise_for_status()
         response = response.json()
         return response['response']['players'][0]['personaname']
+
+def get_users_friends(steam_id: int) -> List[int]:
+        """
+        Get a list of games owned by a user
+        """
+        url = f"{settings.steam_private_api}/ISteamUser/GetFriendList/v1/"
+        params = {
+            "key": settings.steam_key,
+            "steamid": steam_id,
+            "relationship": "friend",
+            "format": "json",
+        }
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        response = response.json()
+        return [friend['steamid'] for friend in response['friendslist']['friends']]

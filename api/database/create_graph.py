@@ -56,7 +56,7 @@ def fetch_games():
         time.sleep(1.5)
     return game_details
 
-def fetch_game_details(games: List[Dict[str, Any]])-> List[Dict[str, Any]]:
+def convert_game_details(games: List[Dict[str, Any]])-> List[Dict[str, Any]]:
     detes = []
     publishers = set()
     developers = set()
@@ -155,7 +155,8 @@ def build_csv(game_details: List[Dict[str, Any]], username: str):
         games.append(game)
         game_to_user.append({
             'from': username,
-            'to': name
+            'to': name,
+            # 'time_played': game_detail['playtime_forever']
         })
         for publisher in pubs:
             if publisher not in company_added:
@@ -197,8 +198,8 @@ def build_csv(game_details: List[Dict[str, Any]], username: str):
             })
     queries= []
     queries.append("""
-    UNWIND $entries as row
-    MERGE (g:Game {name: row.name})
+    UNWIND $entries as game
+    MERGE (g:Game {name: game.name})
     """)
     queries.append("""
     UNWIND $entries as row
@@ -260,7 +261,7 @@ except FileNotFoundError:
     details = None
 if not details:
     games = fetch_games()
-    details = fetch_game_details(games)
+    details = convert_game_details(games)
     write_file(txt_file, details)
 # create_query = build_create_query(details, genres, publishers, developers, settings.my_user)
 
