@@ -12,7 +12,6 @@ import (
 
 // Games is the resolver for the games field.
 func (r *queryResolver) Games(ctx context.Context) ([]*model.Game, error) {
-
 	// games, err := session.Run(ctx, "Match (a:Game) RETURN a", nil)
 	// print("Games: ", games)
 
