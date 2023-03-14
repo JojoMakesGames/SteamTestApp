@@ -1,0 +1,18 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Game {
+  id: ID!
+  name: String!
+}
+
+type User {
+  id: ID!
+  name: String!
+}
+
+type Query {
+  games: [Game!]!
+  users: [User!]!
+}
