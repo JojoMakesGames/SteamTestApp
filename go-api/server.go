@@ -19,7 +19,7 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
-	driver, err := neo4j.NewDriverWithContext(os.Getenv("NEO4J_URI"), neo4j.BasicAuth("", "", ""))
+	driver, err := neo4j.NewDriver(os.Getenv("NEO4J_URI"), neo4j.BasicAuth("", "", ""))
 	if err != nil {
 		print(err)
 	}

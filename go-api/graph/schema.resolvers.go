@@ -18,7 +18,11 @@ func (r *queryResolver) Games(ctx context.Context) ([]*model.Game, error) {
 	// if err != nil {
 	// 	return nil, err
 	// }
-	var returnGames []*model.Game = make([]*model.Game, 0)
+	returnGames, err := r.GameService.GetGames()
+	if err != nil {
+		return nil, err
+	}
+
 	// for games.Next(ctx) {
 	// 	print("In for loop")
 	// 	game := games.Record()
@@ -27,7 +31,6 @@ func (r *queryResolver) Games(ctx context.Context) ([]*model.Game, error) {
 	// 	// returnGames = append(returnGames, &model.Game{ID: game["id"].(string), Name: game["name"].(string)})
 	// 	print("ReturnGames: ", returnGames)
 	// }
-	returnGames = append(returnGames, &model.Game{ID: "1", Name: "Blah"})
 
 	return returnGames, nil
 }
