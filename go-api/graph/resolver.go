@@ -1,7 +1,7 @@
 package graph
 
 import (
-	"server/helpers"
+	"github.com/JojoMakesGames/steam-graphql/helpers"
 )
 
 // This file will not be regenerated automatically.

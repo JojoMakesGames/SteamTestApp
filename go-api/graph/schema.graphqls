@@ -5,9 +5,18 @@
 type Game {
   id: ID!
   name: String!
+  release_date: String!
+  publishers: [Company!]!
+  developers: [Company!]!
 }
 
 type User {
+  id: ID!
+  name: String!
+  friends: [User!]!
+}
+
+type Company {
   id: ID!
   name: String!
 }
