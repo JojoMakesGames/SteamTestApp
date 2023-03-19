@@ -29,32 +29,33 @@ func (gs *GameService) GetGames() ([]*model.Game, error) {
 		if len(returnGames) > 0 && returnGames[len(returnGames)-1].ID == game.ElementId {
 			switch relType {
 			case "PUBLISHED":
-				returnGames[len(returnGames)-1].PublisherIDs = append(returnGames[len(returnGames)-1].PublisherIDs, relationship.StartElementId)
+				returnGames[len(returnGames)-1].Published = append(returnGames[len(returnGames)-1].Published, &relationship)
 				break
 			case "DEVELOPED":
-				returnGames[len(returnGames)-1].DeveloperIDs = append(returnGames[len(returnGames)-1].DeveloperIDs, relationship.StartElementId)
+				returnGames[len(returnGames)-1].Developed = append(returnGames[len(returnGames)-1].Developed, &relationship)
 				break
 			case "GAME_TYPE":
-				returnGames[len(returnGames)-1].GenreIDs = append(returnGames[len(returnGames)-1].GenreIDs, relationship.EndElementId)
+				returnGames[len(returnGames)-1].GameTypes = append(returnGames[len(returnGames)-1].GameTypes, &relationship)
 			}
 			continue
 		}
 
 		modelGame := &model.Game{
-			ID:           game.ElementId,
-			Name:         game.Props["name"].(string),
-			DeveloperIDs: make([]string, 0),
-			PublisherIDs: make([]string, 0),
+			ID:        game.ElementId,
+			Name:      game.Props["name"].(string),
+			Developed: make([]*neo4j.Relationship, 0),
+			Published: make([]*neo4j.Relationship, 0),
+			GameTypes: make([]*neo4j.Relationship, 0),
 		}
 		switch relType {
 		case "PUBLISHED":
-			modelGame.PublisherIDs = append(modelGame.PublisherIDs, relationship.StartElementId)
+			modelGame.Published = append(modelGame.Published, &relationship)
 			break
 		case "DEVELOPED":
-			modelGame.DeveloperIDs = append(modelGame.DeveloperIDs, relationship.StartElementId)
+			modelGame.Developed = append(modelGame.Developed, &relationship)
 			break
 		case "GAME_TYPE":
-			modelGame.GenreIDs = append(modelGame.GenreIDs, relationship.EndElementId)
+			modelGame.GameTypes = append(modelGame.GameTypes, &relationship)
 			break
 		}
 

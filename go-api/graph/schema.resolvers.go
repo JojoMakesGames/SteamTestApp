@@ -12,9 +12,18 @@ import (
 	"github.com/JojoMakesGames/steam-graphql/graph/model"
 )
 
+// ReleaseDate is the resolver for the release_date field.
+func (r *gameResolver) ReleaseDate(ctx context.Context, obj *model.Game) (string, error) {
+	panic(fmt.Errorf("not implemented: ReleaseDate - release_date"))
+}
+
 // Publishers is the resolver for the publishers field.
 func (r *gameResolver) Publishers(ctx context.Context, obj *model.Game) ([]*model.Company, error) {
-	publishers, err := dataloaders.GetCompanies(ctx, obj.PublisherIDs)
+	publisherIds := make([]string, len(obj.Published))
+	for i, published := range obj.Published {
+		publisherIds[i] = published.StartElementId
+	}
+	publishers, err := dataloaders.GetCompanies(ctx, publisherIds)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +32,11 @@ func (r *gameResolver) Publishers(ctx context.Context, obj *model.Game) ([]*mode
 
 // Developers is the resolver for the developers field.
 func (r *gameResolver) Developers(ctx context.Context, obj *model.Game) ([]*model.Company, error) {
-	developers, err := dataloaders.GetCompanies(ctx, obj.DeveloperIDs)
+	developerIds := make([]string, len(obj.Developed))
+	for i, developed := range obj.Developed {
+		developerIds[i] = developed.StartElementId
+	}
+	developers, err := dataloaders.GetCompanies(ctx, developerIds)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +45,11 @@ func (r *gameResolver) Developers(ctx context.Context, obj *model.Game) ([]*mode
 
 // Genres is the resolver for the genres field.
 func (r *gameResolver) Genres(ctx context.Context, obj *model.Game) ([]*model.Genre, error) {
-	genres, err := dataloaders.GetGenres(ctx, obj.GenreIDs)
+	genreIds := make([]string, len(obj.GameTypes))
+	for i, gameType := range obj.GameTypes {
+		genreIds[i] = gameType.EndElementId
+	}
+	genres, err := dataloaders.GetGenres(ctx, genreIds)
 	if err != nil {
 		return nil, err
 	}
