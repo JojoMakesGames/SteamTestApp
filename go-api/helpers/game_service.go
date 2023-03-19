@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"server/graph/model"
+	"github.com/JojoMakesGames/steam-graphql/graph/model"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -10,11 +10,11 @@ type GameService struct {
 	Driver neo4j.Driver
 }
 
-func (gs GameService) GetGames() ([]*model.Game, error) {
+func (gs *GameService) GetGames() ([]*model.Game, error) {
 	session := gs.Driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
-	result, err := session.Run("MATCH (game:Game) RETURN a", nil)
+	result, err := session.Run("MATCH (game:Game)-[rela]-() RETURN game, rela", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -22,8 +22,38 @@ func (gs GameService) GetGames() ([]*model.Game, error) {
 	var record *neo4j.Record
 	for result.NextRecord(&record) {
 		node, _ := record.Get("game")
+		rel, _ := record.Get("rela")
+		relType := rel.(neo4j.Relationship).Type
 		game := node.(neo4j.Node)
-		returnGames = append(returnGames, &model.Game{ID: game.ElementId, Name: game.Props["name"].(string)})
+		relationship := rel.(neo4j.Relationship)
+		if len(returnGames) > 0 && returnGames[len(returnGames)-1].ID == game.ElementId {
+			switch relType {
+			case "PUBLISHED":
+				returnGames[len(returnGames)-1].PublisherIDs = append(returnGames[len(returnGames)-1].PublisherIDs, relationship.StartElementId)
+				break
+			case "DEVELOPED":
+				returnGames[len(returnGames)-1].DeveloperIDs = append(returnGames[len(returnGames)-1].DeveloperIDs, relationship.StartElementId)
+				break
+			}
+			continue
+		}
+
+		modelGame := &model.Game{
+			ID:           game.ElementId,
+			Name:         game.Props["name"].(string),
+			DeveloperIDs: make([]string, 0),
+			PublisherIDs: make([]string, 0),
+		}
+		switch relType {
+		case "PUBLISHED":
+			modelGame.PublisherIDs = append(modelGame.PublisherIDs, relationship.StartElementId)
+			break
+		case "DEVELOPED":
+			modelGame.DeveloperIDs = append(modelGame.DeveloperIDs, relationship.StartElementId)
+			break
+		}
+
+		returnGames = append(returnGames, modelGame)
 	}
 
 	return returnGames, nil

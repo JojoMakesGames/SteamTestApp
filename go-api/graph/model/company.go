@@ -1,6 +1,6 @@
-package models
+package model
 
-type Game struct {
+type Company struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }

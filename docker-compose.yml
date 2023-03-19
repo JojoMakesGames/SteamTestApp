@@ -1,0 +1,22 @@
+services:
+  db:
+    container_name: neo4j
+    image: neo4j:latest
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - ./data:/data
+    environment:
+      - NEO4J_AUTH=none
+  api:
+    container_name: backend
+    build: ./go-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - NEO4J_URI=bolt://db:7687
+    volumes:
+      - ./:/app/
