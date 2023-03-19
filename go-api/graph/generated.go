@@ -39,6 +39,7 @@ type Config struct {
 type ResolverRoot interface {
 	Game() GameResolver
 	Query() QueryResolver
+	User() UserResolver
 }
 
 type DirectiveRoot struct {
@@ -71,6 +72,7 @@ type ComplexityRoot struct {
 
 	User struct {
 		Friends func(childComplexity int) int
+		Games   func(childComplexity int) int
 		ID      func(childComplexity int) int
 		Name    func(childComplexity int) int
 	}
@@ -85,6 +87,10 @@ type GameResolver interface {
 type QueryResolver interface {
 	Games(ctx context.Context) ([]*model.Game, error)
 	Users(ctx context.Context) ([]*model.User, error)
+}
+type UserResolver interface {
+	Friends(ctx context.Context, obj *model.User) ([]*model.User, error)
+	Games(ctx context.Context, obj *model.User) ([]*model.Game, error)
 }
 
 type executableSchema struct {
@@ -192,6 +198,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Friends(childComplexity), true
+
+	case "User.games":
+		if e.complexity.User.Games == nil {
+			break
+		}
+
+		return e.complexity.User.Games(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -892,6 +905,8 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 				return ec.fieldContext_User_name(ctx, field)
 			case "friends":
 				return ec.fieldContext_User_friends(ctx, field)
+			case "games":
+				return ec.fieldContext_User_games(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1130,7 +1145,7 @@ func (ec *executionContext) _User_friends(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Friends, nil
+		return ec.resolvers.User().Friends(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1151,8 +1166,8 @@ func (ec *executionContext) fieldContext_User_friends(ctx context.Context, field
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -1161,8 +1176,68 @@ func (ec *executionContext) fieldContext_User_friends(ctx context.Context, field
 				return ec.fieldContext_User_name(ctx, field)
 			case "friends":
 				return ec.fieldContext_User_friends(ctx, field)
+			case "games":
+				return ec.fieldContext_User_games(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_games(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_games(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Games(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Game)
+	fc.Result = res
+	return ec.marshalNGame2ᚕᚖgithubᚗcomᚋJojoMakesGamesᚋsteamᚑgraphqlᚋgraphᚋmodelᚐGameᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_games(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Game_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Game_name(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Game_release_date(ctx, field)
+			case "publishers":
+				return ec.fieldContext_Game_publishers(ctx, field)
+			case "developers":
+				return ec.fieldContext_Game_developers(ctx, field)
+			case "genres":
+				return ec.fieldContext_Game_genres(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Game", field.Name)
 		},
 	}
 	return fc, nil
@@ -3237,22 +3312,55 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 
 			out.Values[i] = ec._User_name(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "friends":
+			field := field
 
-			out.Values[i] = ec._User_friends(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_friends(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "games":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_games(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

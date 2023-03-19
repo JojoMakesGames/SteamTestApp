@@ -67,7 +67,29 @@ func (r *queryResolver) Games(ctx context.Context) ([]*model.Game, error) {
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	returnUsers, err := r.UserService.GetUsers()
+	if err != nil {
+		return nil, err
+	}
+	return returnUsers, nil
+}
+
+// Friends is the resolver for the friends field.
+func (r *userResolver) Friends(ctx context.Context, obj *model.User) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented: Friends - friends"))
+}
+
+// Games is the resolver for the games field.
+func (r *userResolver) Games(ctx context.Context, obj *model.User) ([]*model.Game, error) {
+	ownIds := make([]string, len(obj.Owns))
+	for i, game := range obj.Owns {
+		ownIds[i] = game.EndElementId
+	}
+	games, err := dataloaders.GetGames(ctx, ownIds)
+	if err != nil {
+		return nil, err
+	}
+	return games, nil
 }
 
 // Game returns GameResolver implementation.
@@ -76,5 +98,9 @@ func (r *Resolver) Game() GameResolver { return &gameResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// User returns UserResolver implementation.
+func (r *Resolver) User() UserResolver { return &userResolver{r} }
+
 type gameResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }
