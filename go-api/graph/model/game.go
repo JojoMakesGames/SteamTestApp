@@ -6,4 +6,5 @@ type Game struct {
 	ReleaseDate  string   `json:"releaseDate"`
 	PublisherIDs []string `json:"publisherIDs"`
 	DeveloperIDs []string `json:"developerIDs"`
+	GenreIDs     []string `json:"gameTypeIDs"`
 }

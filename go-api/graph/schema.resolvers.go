@@ -30,6 +30,15 @@ func (r *gameResolver) Developers(ctx context.Context, obj *model.Game) ([]*mode
 	return developers, nil
 }
 
+// Genres is the resolver for the genres field.
+func (r *gameResolver) Genres(ctx context.Context, obj *model.Game) ([]*model.Genre, error) {
+	genres, err := dataloaders.GetGenres(ctx, obj.GenreIDs)
+	if err != nil {
+		return nil, err
+	}
+	return genres, nil
+}
+
 // Games is the resolver for the games field.
 func (r *queryResolver) Games(ctx context.Context) ([]*model.Game, error) {
 	returnGames, err := r.GameService.GetGames()
