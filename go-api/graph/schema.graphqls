@@ -31,4 +31,5 @@ type Genre {
 type Query {
   games: [Game!]!
   users: [User!]!
+  game(id: ID!): Game
 }

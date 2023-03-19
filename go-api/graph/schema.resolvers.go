@@ -74,6 +74,15 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return returnUsers, nil
 }
 
+// Game is the resolver for the game field.
+func (r *queryResolver) Game(ctx context.Context, id string) (*model.Game, error) {
+	returnGame, err := r.GameService.GetGame(id)
+	if err != nil {
+		return nil, err
+	}
+	return returnGame, nil
+}
+
 // Friends is the resolver for the friends field.
 func (r *userResolver) Friends(ctx context.Context, obj *model.User) ([]*model.User, error) {
 	panic(fmt.Errorf("not implemented: Friends - friends"))
