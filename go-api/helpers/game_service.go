@@ -34,6 +34,8 @@ func (gs *GameService) GetGames() ([]*model.Game, error) {
 			case "DEVELOPED":
 				returnGames[len(returnGames)-1].DeveloperIDs = append(returnGames[len(returnGames)-1].DeveloperIDs, relationship.StartElementId)
 				break
+			case "GAME_TYPE":
+				returnGames[len(returnGames)-1].GenreIDs = append(returnGames[len(returnGames)-1].GenreIDs, relationship.EndElementId)
 			}
 			continue
 		}
@@ -50,6 +52,9 @@ func (gs *GameService) GetGames() ([]*model.Game, error) {
 			break
 		case "DEVELOPED":
 			modelGame.DeveloperIDs = append(modelGame.DeveloperIDs, relationship.StartElementId)
+			break
+		case "GAME_TYPE":
+			modelGame.GenreIDs = append(modelGame.GenreIDs, relationship.EndElementId)
 			break
 		}
 

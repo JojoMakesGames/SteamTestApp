@@ -8,6 +8,7 @@ type Game {
   release_date: String!
   publishers: [Company!]!
   developers: [Company!]!
+  genres: [Genre!]!
 }
 
 type User {
@@ -17,6 +18,11 @@ type User {
 }
 
 type Company {
+  id: ID!
+  name: String!
+}
+
+type Genre {
   id: ID!
   name: String!
 }

@@ -18,12 +18,15 @@ type Loaders struct {
 	CompanyLoader   *dataloader.Loader
 	PublisherLoader *dataloader.Loader
 	DeveloperLoader *dataloader.Loader
+	GenreLoader     *dataloader.Loader
 }
 
 func CreateLoaders(driver *neo4j.Driver) *Loaders {
 	companyReader := &CompanyReader{driver: *driver}
+	genreReader := &GenreReader{driver: *driver}
 	loaders := &Loaders{
 		CompanyLoader: dataloader.NewBatchedLoader(companyReader.GetCompanies),
+		GenreLoader:   dataloader.NewBatchedLoader(genreReader.GetGenres),
 	}
 
 	return loaders
@@ -32,7 +35,6 @@ func CreateLoaders(driver *neo4j.Driver) *Loaders {
 // Middleware injects data loaders into the context
 func Middleware(loaders *Loaders, next http.Handler) http.Handler {
 	// return a middleware that injects the loader to the request context
-	print("Middleware called\n")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		nextCtx := context.WithValue(r.Context(), loadersKey, loaders)
 		r = r.WithContext(nextCtx)
