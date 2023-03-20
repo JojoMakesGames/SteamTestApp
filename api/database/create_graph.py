@@ -87,7 +87,8 @@ def convert_game_details(games: List[Dict[str, Any]])-> List[Dict[str, Any]]:
     return detes
 
 def build_create_query(game_details: List[Dict[str, Any]], genres: Set, publishers: Set, developers: Set, steam_id: int) -> str:
-    username = get_steam_username(steam_id)
+    # username = get_steam_username(steam_id)
+    username = "SpartanPlaya"
     create_query = """CREATE"""
     create_query += f"""
     (u{username}user:User {{name: "{username}"}}),
@@ -253,8 +254,8 @@ def build_csv(game_details: List[Dict[str, Any]], username: str):
 publishers = set()
 developers = set()
 genres = set()
-username = get_steam_username(settings.my_user)
-txt_file = f"{username}_games.txt"
+# username = get_steam_username(settings.my_user)
+txt_file = f"Olecheon_games.txt"
 try:
     details = read_file(txt_file)
 except FileNotFoundError:
@@ -265,7 +266,7 @@ if not details:
     write_file(txt_file, details)
 # create_query = build_create_query(details, genres, publishers, developers, settings.my_user)
 
-build_csv(details, username=username)
+build_csv(details, username="Olecheon")
 
 # driver = GraphDatabase.driver(uri, auth=(userName, password))
 # with driver.session(database="neo4j") as session:
