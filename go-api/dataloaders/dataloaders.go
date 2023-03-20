@@ -19,14 +19,17 @@ type Loaders struct {
 	PublisherLoader *dataloader.Loader
 	DeveloperLoader *dataloader.Loader
 	GenreLoader     *dataloader.Loader
+	GameLoader      *dataloader.Loader
 }
 
 func CreateLoaders(driver *neo4j.Driver) *Loaders {
 	companyReader := &CompanyReader{driver: *driver}
 	genreReader := &GenreReader{driver: *driver}
+	gameReader := &GameReader{driver: *driver}
 	loaders := &Loaders{
 		CompanyLoader: dataloader.NewBatchedLoader(companyReader.GetCompanies),
 		GenreLoader:   dataloader.NewBatchedLoader(genreReader.GetGenres),
+		GameLoader:    dataloader.NewBatchedLoader(gameReader.GetGames),
 	}
 
 	return loaders

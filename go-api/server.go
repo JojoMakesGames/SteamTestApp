@@ -26,7 +26,10 @@ func main() {
 		print(err)
 	}
 
-	resolver := graph.Resolver{GameService: helpers.GameService{Driver: driver}}
+	resolver := graph.Resolver{
+		GameService: helpers.GameService{Driver: driver},
+		UserService: helpers.UserService{Driver: driver},
+	}
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &resolver}))
 	dataloaderSrv := dataloaders.Middleware(dataloaders.CreateLoaders(&driver), srv)

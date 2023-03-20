@@ -12,9 +12,18 @@ import (
 	"github.com/JojoMakesGames/steam-graphql/graph/model"
 )
 
+// ReleaseDate is the resolver for the release_date field.
+func (r *gameResolver) ReleaseDate(ctx context.Context, obj *model.Game) (string, error) {
+	panic(fmt.Errorf("not implemented: ReleaseDate - release_date"))
+}
+
 // Publishers is the resolver for the publishers field.
 func (r *gameResolver) Publishers(ctx context.Context, obj *model.Game) ([]*model.Company, error) {
-	publishers, err := dataloaders.GetCompanies(ctx, obj.PublisherIDs)
+	publisherIds := make([]string, len(obj.Published))
+	for i, published := range obj.Published {
+		publisherIds[i] = published.StartElementId
+	}
+	publishers, err := dataloaders.GetCompanies(ctx, publisherIds)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +32,11 @@ func (r *gameResolver) Publishers(ctx context.Context, obj *model.Game) ([]*mode
 
 // Developers is the resolver for the developers field.
 func (r *gameResolver) Developers(ctx context.Context, obj *model.Game) ([]*model.Company, error) {
-	developers, err := dataloaders.GetCompanies(ctx, obj.DeveloperIDs)
+	developerIds := make([]string, len(obj.Developed))
+	for i, developed := range obj.Developed {
+		developerIds[i] = developed.StartElementId
+	}
+	developers, err := dataloaders.GetCompanies(ctx, developerIds)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +45,11 @@ func (r *gameResolver) Developers(ctx context.Context, obj *model.Game) ([]*mode
 
 // Genres is the resolver for the genres field.
 func (r *gameResolver) Genres(ctx context.Context, obj *model.Game) ([]*model.Genre, error) {
-	genres, err := dataloaders.GetGenres(ctx, obj.GenreIDs)
+	genreIds := make([]string, len(obj.GameTypes))
+	for i, gameType := range obj.GameTypes {
+		genreIds[i] = gameType.EndElementId
+	}
+	genres, err := dataloaders.GetGenres(ctx, genreIds)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +67,38 @@ func (r *queryResolver) Games(ctx context.Context) ([]*model.Game, error) {
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	returnUsers, err := r.UserService.GetUsers()
+	if err != nil {
+		return nil, err
+	}
+	return returnUsers, nil
+}
+
+// Game is the resolver for the game field.
+func (r *queryResolver) Game(ctx context.Context, id string) (*model.Game, error) {
+	returnGame, err := r.GameService.GetGame(id)
+	if err != nil {
+		return nil, err
+	}
+	return returnGame, nil
+}
+
+// Friends is the resolver for the friends field.
+func (r *userResolver) Friends(ctx context.Context, obj *model.User) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented: Friends - friends"))
+}
+
+// Games is the resolver for the games field.
+func (r *userResolver) Games(ctx context.Context, obj *model.User) ([]*model.Game, error) {
+	ownIds := make([]string, len(obj.Owns))
+	for i, game := range obj.Owns {
+		ownIds[i] = game.EndElementId
+	}
+	games, err := dataloaders.GetGames(ctx, ownIds)
+	if err != nil {
+		return nil, err
+	}
+	return games, nil
 }
 
 // Game returns GameResolver implementation.
@@ -59,5 +107,9 @@ func (r *Resolver) Game() GameResolver { return &gameResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// User returns UserResolver implementation.
+func (r *Resolver) User() UserResolver { return &userResolver{r} }
+
 type gameResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }

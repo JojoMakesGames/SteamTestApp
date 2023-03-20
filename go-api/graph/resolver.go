@@ -10,4 +10,5 @@ import (
 
 type Resolver struct {
 	GameService helpers.GameService
+	UserService helpers.UserService
 }
