@@ -255,7 +255,7 @@ publishers = set()
 developers = set()
 genres = set()
 # username = get_steam_username(settings.my_user)
-txt_file = f"Olecheon_games.txt"
+txt_file = f"Olecheon_gamez.txt"
 try:
     details = read_file(txt_file)
 except FileNotFoundError:
